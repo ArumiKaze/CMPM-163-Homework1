@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>demo - Phong shader</title>
+		<title>Eisaku Imura - CMPM 163 Homework 1 A</title>
 		<meta charset="utf-8">
 		<style>
 			body {
@@ -16,7 +16,9 @@
 <div id="container"></div>
 
     <script src="js/three.js"></script>
+	<script src="js/OBJLoader.js"></script>
     <script id="vertexShader" type="x-shader/x-vertex">
+	
 
 	//Three.js gives us these automatically when a perspective camera is bound to the renderer
 	uniform mat4 modelMatrix;
@@ -122,6 +124,99 @@
 	}
 
 	</script>
+	
+	<script id="texVS" type="x-shader/x-vertex">
+
+	//Three.js gives us these automatically when a perspective camera is bound to the renderer
+	uniform mat4 modelMatrix;
+	uniform mat4 viewMatrix;
+      	uniform mat4 projectionMatrix;
+
+     	attribute vec3 position;
+	attribute vec2 uv;
+
+	varying vec2 vUV;
+
+	void main() {
+        	vec4 position = viewMatrix * modelMatrix * vec4(position, 1.0);
+	   	vUV = uv;
+        	gl_Position = projectionMatrix * position; 
+     	 }
+
+    </script>
+
+    <script id="texFS" type="x-shader/x-fragment">
+
+	precision mediump float;
+
+	uniform sampler2D tex;
+	varying vec2 vUV;
+
+      	void main() {
+
+		vec4 c = texture2D(tex, vUV);
+        	//gl_FragColor = vec4(vUV.xy, 0.0, 1.0);
+        	gl_FragColor = vec4(c.rgb, 1.0);
+	}
+
+	</script>
+	
+	<script id="vertexShader2" type="x-shader/x-vertex">
+
+			precision mediump float;
+			precision mediump int;
+
+			uniform mat4 modelViewMatrix;
+      			uniform mat4 projectionMatrix;
+
+			attribute vec3 position;
+			
+			uniform vec4 my_color;
+      			uniform float time;
+
+			varying vec3 vPosition;
+			varying vec4 vColor;
+
+			void main()	
+			{
+
+				
+				vec3 pos = position;
+
+       	 			//uncomment for basic vertex displacement
+       				 pos.x += sin(pos.x * 10.0 + time) * 0.1;
+       				 pos.y += cos(pos.y * 10.0 + time) * 0.2;
+       				 pos.z += sin(pos.z * 20.0 + time) * 0.3;
+
+        			vPosition = pos;
+				vColor = my_color;
+
+				gl_Position = projectionMatrix * modelViewMatrix * vec4( pos, 1.0 );
+			
+      			}
+
+		</script>
+
+		<script id="fragmentShader2" type="x-shader/x-fragment">
+
+			precision mediump float;
+			precision mediump int;
+
+			uniform float time;
+
+			varying vec3 vPosition;
+			varying vec4 vColor;
+
+			void main()	
+			{
+				vec4 color;
+				color = vec4( vColor );
+				color.r += sin( vPosition.x * 10.0 + time ) * 0.5;
+       				color.b += cos( vPosition.x * 5.0 + time  ) * 1.0;
+				gl_FragColor = color;
+			}
+
+		</script>
 
 
 	<script>
@@ -132,9 +227,18 @@
 
       	var vs = document.getElementById( 'vertexShader' ).textContent;
       	var fs = document.getElementById( 'fragmentShader' ).textContent;
+		var tex_vs = document.getElementById( 'texVS' ).textContent;
+      	var tex_fs = document.getElementById( 'texFS' ).textContent;
+		var vs2 = document.getElementById( 'vertexShader2' ).textContent;
+        var fs2 = document.getElementById( 'fragmentShader2' ).textContent;
 
-	var mesh1, mesh2, mesh3;
+
+	var kaijyu;
+	var t34;
+	var kirby;
 	var material;
+	var material2;
+	var material3;
 
 	init();
 	animate();
@@ -160,13 +264,6 @@
         	var light2_diffuse = new THREE.Vector3(0.0,0.0,1.0);
         	var light2_specular = new THREE.Vector3(1.0,1.0,1.0);
 
-
-		// geometry
-
-		var geometry1 = new THREE.SphereGeometry( 1, 64, 64 );
-        	var geometry2 = new THREE.BoxGeometry( 1, 1, 1 );
-        	var geometry3 = new THREE.TorusKnotGeometry( 1, 0.1, 100, 16 );
-
 		// materials (ie, linking to the shader program)
 
           	var uniforms =  {
@@ -184,21 +281,86 @@
             		vertexShader: vs,
             		fragmentShader: fs,	
 		} );
+		
+		//texture material
+		var objTex = new THREE.TextureLoader().load('t-34tex.png');
+		var uniforms2 = {
+			tex:{type: "t", value: objTex},
+		};
+		material2 = new THREE.RawShaderMaterial({
+			uniforms: uniforms2,
+			vertexShader: tex_vs,
+			fragmentShader: tex_fs,
+		});
+		
+		//another material
+		material3 = new THREE.RawShaderMaterial( {
 
-
-
-		mesh1 = new THREE.Mesh( geometry1, material );
-		mesh1.translateX(-2.5);
-        	scene.add( mesh1 );
-
-        
-	      	mesh2 = new THREE.Mesh( geometry2, material );
-		mesh2.translateX(0.0);
-        	scene.add( mesh2 );
-
-        	mesh3 = new THREE.Mesh( geometry3, material );
-		mesh3.translateX(2.5);
-        	scene.add( mesh3 );
+					uniforms: {
+						time: { type: "f", value: 1.0 },
+            					my_color: { type: "v4", value: new THREE.Vector4(0.0,0.0,0.0,1.0) }
+					},
+					vertexShader: vs2,
+					fragmentShader: fs2,
+				
+        			} );
+		
+		//load first object
+		var loader = new THREE.OBJLoader();
+		loader.load('kaijyu.obj', function(object){
+		
+			object.traverse(function(child){
+				if(child instanceof THREE.Mesh){
+					child.material = material;
+				}
+			});
+			var s = 0.05;
+			object.scale.set(s, s, s);
+			object.position.x += 1.0;
+			object.position.y -= 0.5;
+			
+			kaijyu = object;
+			kaijyu.translateX(-4);
+			scene.add(kaijyu);
+		});
+		
+		//load second object
+		var loader2 = new THREE.OBJLoader();
+		loader2.load('t-34.obj', function(object){
+		
+			object.traverse(function(child){
+				if(child instanceof THREE.Mesh){
+					child.material = material2;
+				}
+			});
+			var s = 0.04;
+			object.scale.set(s, s, s);
+			object.position.x += 1.0;
+			object.position.y -= 0.5;
+			
+			t34 = object;
+			t34.translateX(-1);
+			scene.add(t34);
+		});
+		
+		var loader3 = new THREE.OBJLoader();
+		loader3.load('kirby.obj', function(object){
+		
+			object.traverse(function(child){
+				if(child instanceof THREE.Mesh){
+					child.material = material3;
+				}
+			});
+			var s = 0.2;
+			object.scale.set(s, s, s);
+			object.position.x += 1.0;
+			object.position.y -= 0.5;
+			
+			kirby = object;
+			kirby.translateX(2);
+			scene.add(kirby);
+			kirby.name = "kirbyobj";
+		});
 
   
 		renderer = new THREE.WebGLRenderer();
@@ -223,11 +385,15 @@
 	function render() {
 
 		var time = performance.now();
-
-		mesh2.rotation.x = time * 0.00005;
-		mesh2.rotation.y = time * 0.0005;
-
-		mesh3.rotation.x = time * 0.0009;
+		
+		kaijyu.rotation.x += 0.001;
+		kaijyu.rotation.y -= 0.001;
+		t34.rotation.x += 0.001;
+		t34.rotation.y -= 0.001;
+		var object3 = scene.children[1].children[0];
+		object3.rotation.x += 0.03;
+		object3.rotation.y -= 0.01;
+		object3.material.uniforms.time.value = time * 0.003;
 
 		//if I want to update the lights, I acutally have to update the material used by each object in the scene. 
 		//material.uniforms.light1_diffuse.value = new THREE.Vector3(0.0,1.0,0.0);
