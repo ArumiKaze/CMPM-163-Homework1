@@ -263,6 +263,14 @@
         	var light2_pos = new THREE.Vector3(-10.0,0.0,0.0); //from the left
         	var light2_diffuse = new THREE.Vector3(0.0,0.0,1.0);
         	var light2_specular = new THREE.Vector3(1.0,1.0,1.0);
+			var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
+			scene.add( directionalLight );
+			var spotLight = new THREE.SpotLight( 0xffffff );
+			spotLight.position.set( 0, 0, 0 );
+			spotLight.castShadow = true;
+
+scene.add( spotLight );
+			
 
 		// materials (ie, linking to the shader program)
 
@@ -298,7 +306,7 @@
 
 					uniforms: {
 						time: { type: "f", value: 1.0 },
-            					my_color: { type: "v4", value: new THREE.Vector4(0.0,0.0,0.0,1.0) }
+            					my_color: { type: "v4", value: new THREE.Vector4(0.0,0.0,0.0,1.0) },
 					},
 					vertexShader: vs2,
 					fragmentShader: fs2,
@@ -390,7 +398,7 @@
 		kaijyu.rotation.y -= 0.001;
 		t34.rotation.x += 0.001;
 		t34.rotation.y -= 0.001;
-		var object3 = scene.children[1].children[0];
+		var object3 = scene.children[3].children[0];
 		object3.rotation.x += 0.03;
 		object3.rotation.y -= 0.01;
 		object3.material.uniforms.time.value = time * 0.003;
