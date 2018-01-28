@@ -387,11 +387,11 @@ scene.add( spotLight );
 
 		requestAnimationFrame( animate );
 		var object3 = scene.children[3].children[0];
-		render();
+		render(object3);
 
 	}
 
-	function render() {
+	function render(object3) {
 
 		var time = performance.now();
 		
@@ -399,8 +399,8 @@ scene.add( spotLight );
 		kaijyu.rotation.y -= 0.001;
 		t34.rotation.x += 0.001;
 		t34.rotation.y -= 0.001;
-		var object3 = scene.children[3].children[0];
-		console.log("Attempt6");
+		//var object3 = scene.children[3].children[0];
+		console.log("Attempt7");
 		object3.rotation.x += 0.03;
 		object3.rotation.y -= 0.01;
 		object3.material.uniforms.time.value = time * 0.003;
