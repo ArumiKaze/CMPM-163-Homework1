@@ -386,6 +386,7 @@ scene.add( spotLight );
 	function animate() {
 
 		requestAnimationFrame( animate );
+		var object3 = scene.children[3].children[0];
 		render();
 
 	}
@@ -399,7 +400,7 @@ scene.add( spotLight );
 		t34.rotation.x += 0.001;
 		t34.rotation.y -= 0.001;
 		var object3 = scene.children[3].children[0];
-		console.log("Attempt5");
+		console.log("Attempt6");
 		object3.rotation.x += 0.03;
 		object3.rotation.y -= 0.01;
 		object3.material.uniforms.time.value = time * 0.003;
